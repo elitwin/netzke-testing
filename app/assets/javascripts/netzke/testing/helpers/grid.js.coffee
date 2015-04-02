@@ -1,7 +1,13 @@
 Ext.apply window,
-  grid: (title) ->
-    if title
-      Ext.ComponentQuery.query('grid[title="'+title+'"]')[0]
+  # title is not always a unique identifier for some complicated frames
+  # we should be able to lookup by title or name
+  grid: (value, lookup) ->
+    # default to query by title for backwards compatibility
+    lookup = lookup || 'title'
+    if value && lookup == 'title'
+      Ext.ComponentQuery.query('grid[title="'+value+'"]')[0]
+    else if value && lookup == 'name'
+      Ext.ComponentQuery.query('grid[name="'+value+'"]')[0]
     else
       Ext.ComponentQuery.query('grid{isVisible(true)}')[0]
 
@@ -51,6 +57,15 @@ Ext.apply window,
       out.push(if assocValue then assocValue else r.get(name))
     out
 
+  # Sometimes, we only want a single cell's value, not the entire column
+  valueInCell: (name, params) ->
+    params ?= {}
+    grid = params.in || this.grid()
+    r = grid.getStore().getAt(params.row);
+
+    assocValue = r.get('meta').associationValues[name]
+    if assocValue then assocValue else r.get(name)
+
   selectAllRows: (params) ->
     params ?= {}
     grid = params.in || this.grid()
@@ -89,6 +104,13 @@ Ext.apply window,
     params ?= {}
     grid = params.in || this.grid()
     grid.getSelectionModel().select(grid.getStore().first())
+
+  # selectNthRow()
+  # selectNthRow in: grid('Book'), row: 2
+  selectNthRow: (params) ->
+    params ?= {}
+    grid = params.in || this.grid()
+    grid.getSelectionModel().select(params.row)
 
   # Example:
   # editLastRow {title: 'Foo', exemplars: 10}

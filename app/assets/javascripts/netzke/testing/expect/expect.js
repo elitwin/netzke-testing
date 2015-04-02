@@ -196,6 +196,7 @@
    */
 
   Assertion.prototype.be =
+  Assertion.prototype.eq =
   Assertion.prototype.equal = function (obj) {
     this.assert(
         obj === this.obj

@@ -8,28 +8,32 @@ module Netzke::Testing::Helpers
     visit url
 
     # Wait while the test is running
-    wait_for_javascript
+    wait_for_javascript(options)
 
-    assert_mocha_results
+    assert_mocha_results(options)
   end
 
-  def wait_for_javascript
+  def wait_for_javascript(options = {})
+    pause = options[:pause] || 0.1
+    # no specs are supposed to run longer than 100 seconds (overridable though)
+    timeout = options[:timeout] || 100
+
     start = Time.now
     loop do
-      page.execute_script("return Netzke.mochaDone;") ? break : sleep(0.1)
+      page.execute_script("return Netzke.mochaDone;") ? break : sleep(pause)
 
-      # no specs are supposed to run longer than 100 seconds
-      raise "Timeout running JavaScript specs for #{@component}" if Time.now > start + 100.seconds
+      raise "Timeout running JavaScript specs for #{@component}" if
+        Time.now > start + timeout.seconds
     end
 
   rescue Selenium::WebDriver::Error::JavascriptError => e
     # give some time for visual examination of the problem
-    # sleep 5
+    sleep(pause) if pause > 0
 
     raise e
   end
 
-  def assert_mocha_results
+  def assert_mocha_results(options)
     result = page.execute_script(<<-JS)
       var runner = Netzke.mochaRunner;
       var errors = [];
@@ -43,8 +47,9 @@ module Netzke::Testing::Helpers
     JS
 
     if !result["success"]
+      pause = options[:pause] || 0
       # give some time for visual examination of the problem
-      # sleep 500
+      sleep(pause) if pause > 0
 
       errors = result["errors"].each_with_index.map do |(title, error), i|
         "#{i+1}) #{title}\n#{error}\n\n"

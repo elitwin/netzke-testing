@@ -33,6 +33,16 @@ Ext.apply window,
         callback.call()
       , delay
 
+  waitTimeout: () ->
+    if typeof arguments[0] == 'function'
+      throw "Timeout delay not specified"
+    else
+      delay = arguments[0] || 0
+      callback = arguments[1]
+      setTimeout ->
+        callback.call()
+      , delay
+
   click: (cmp) ->
     if Ext.isString(cmp)
       throw "Could not locate " + cmp

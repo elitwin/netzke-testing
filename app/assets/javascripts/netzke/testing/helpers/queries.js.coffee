@@ -15,6 +15,48 @@ Ext.apply window,
     button ||= Ext.ComponentQuery.query("button{isVisible(true)}[tooltip='"+text+"']")[0]
     button || "button " + text
 
+  # useful for finding a button in a specific component with a complicated form
+  buttonIn: (text, params) ->
+    btn: null
+    params ?= {}
+    context = params.in
+
+    query = "button{isVisible(true)}[text='"+text+"']"
+    if context
+      btn = context.query(query)[0] || 'button ' + text
+    else
+      btn = Ext.ComponentQuery.query(query)[0] ||
+        Ext.DomQuery.select("[data-qtip=#{text}]")[0] ||
+        "button " + text
+
+  # not sure if all of these additional methods are written properly or
+  # are even needed - a Developer no longer at PNMAC wrote these
+  selectItemCombo: (params) ->
+    expandCombo params.combo
+    wait ->
+      select params.item, in: combobox(params.combo)
+
+  valuesInCombo: (params) ->
+    params ?= {}
+    combo = params.in
+    out = []
+    combo.getStore().each (r) ->
+      out.push(r.data.text || r.data.field1)
+    out.join('|')
+
+  getComboValue: (params) ->
+    Ext.ComponentQuery
+      .query('[name="'+params.name+'"]')[0].getValue()
+
+  setCheckboxValue: (params) ->
+    Ext.ComponentQuery
+      .query('[name="'+params.name+'"]')[0].setValue(params.value)
+
+  setComboValue: (params) ->
+    Ext.ComponentQuery
+      .query('[name="'+params.name+'"]')[0].setValue(params.value)
+      #.query('combo[name="'+params.name+'"]')[0].setValue(params.value)
+
   tool: (type) ->
     Ext.ComponentQuery.query("tool{isVisible(true)}[type='"+type+"']")[0] || 'tool ' + type
 
